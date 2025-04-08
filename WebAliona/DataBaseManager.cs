@@ -23,18 +23,22 @@ namespace WebAliona.Data
 
         public async Task AddNewsAsync(AppAlionaContext context, int count)
         {
+            HttpClient client = new HttpClient();
             var faker = new Faker<New>("en")
                 .RuleFor(b => b.title, f => f.Lorem.Sentence(3,2))
                 .RuleFor(b => b.slug,(f, b) => b.title.Replace(' ', '-'))
                 .RuleFor(b => b.summary, f => f.Lorem.Sentence(10, 2))
                 .RuleFor(b => b.content, f => f.Lorem.Sentence(40, 5))
-                .RuleFor(b => b.photo, (f,b) => $"https://picsum.photos/1200/800?grayscale{b.title}{f.Random.Int(1,10000)}");
+                .RuleFor(b => b.photo, (f,b) => $"{b.title}{f.Random.Int(1,10000)}.jpg");
 
             var newsList = new List<New>();  
             
             for (int i = 0; i < count; i++)
             {
                 var newsItem = faker.Generate();  
+                var bytes = await client.GetByteArrayAsync($"https://picsum.photos/800?grayscale");
+                var path = Path.Combine("~img/", newsItem.photo);
+                File.WriteAllBytes(path, bytes);
                 newsList.Add(newsItem);          
             }
             
